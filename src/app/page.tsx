@@ -1,95 +1,84 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+import { useEffect } from 'react'
+import type { NextPage } from 'next'
+import * as THREE from 'three'
 
-export default function Home() {
+const Home: NextPage = () => {
+  let canvas: HTMLElement
+  useEffect(() => {
+    if (canvas) return
+    // canvasを取得
+    canvas = document.getElementById('canvas')!
+
+    // シーン
+    const scene = new THREE.Scene()
+
+    // サイズ
+    const sizes = {
+      width: innerWidth,
+      height: innerHeight
+    }
+
+    // カメラ
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      sizes.width / sizes.height,
+      0.1,
+      1000
+    )
+
+    // レンダラー
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas || undefined,
+      antialias: true,
+      alpha: true
+    })
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(window.devicePixelRatio)
+
+    // ボックスジオメトリー
+    const boxGeometry = new THREE.BoxGeometry(1, 1, 1)
+    const boxMaterial = new THREE.MeshLambertMaterial({
+      color: '#2497f0'
+    })
+    const box = new THREE.Mesh(boxGeometry, boxMaterial)
+    box.position.z = -5
+    box.rotation.set(10, 10, 10)
+    scene.add(box)
+
+    // ライト
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7)
+    scene.add(ambientLight)
+    const pointLight = new THREE.PointLight(0xffffff, 0.2)
+    pointLight.position.set(1, 2, 3)
+    scene.add(pointLight)
+
+    // アニメーション
+    const clock = new THREE.Clock()
+    const tick = () => {
+      const elapsedTime = clock.getElapsedTime()
+      box.rotation.x = elapsedTime
+      box.rotation.y = elapsedTime
+      window.requestAnimationFrame(tick)
+      renderer.render(scene, camera)
+    }
+    tick()
+
+    // ブラウザのリサイズ処理
+    window.addEventListener('resize', () => {
+      sizes.width = window.innerWidth
+      sizes.height = window.innerHeight
+      camera.aspect = sizes.width / sizes.height
+      camera.updateProjectionMatrix()
+      renderer.setSize(sizes.width, sizes.height)
+      renderer.setPixelRatio(window.devicePixelRatio)
+    })
+  }, [])
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+    <>
+      <canvas id="canvas"></canvas>
+    </>
+  )
 }
+
+export default Home
